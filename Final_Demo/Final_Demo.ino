@@ -50,10 +50,22 @@ ESP8266WiFiMulti wifiMulti;
 
 
  
+//// WiFi AP SSID
+//#define WIFI_SSID "WORKSTATION"
+//// WiFi password
+//#define WIFI_PASSWORD "Superman_27"
+
+
 // WiFi AP SSID
-#define WIFI_SSID "WORKSTATION"
+#define WIFI_SSID "Philips_DA 2.4G"
 // WiFi password
-#define WIFI_PASSWORD "Superman_27"
+#define WIFI_PASSWORD "Philips123"
+
+
+// Replace with your network credentials
+//const char* ssid     = "Philips_DA 2.4G";
+//const char* password = "Philips123";
+
 //InfluxDB v2 server url, e.g. https://eu-central-1-1.aws.cloud2.influxdata.com (Use: InfluxDB UI -> Load Data -> Client Libraries)
 ////#define INFLUXDB_URL "http://192.168.1.19:8086"
 //// InfluxDB v2 server or cloud API token (Use: InfluxDB UI -> Data -> API Tokens -> Generate API Token)
