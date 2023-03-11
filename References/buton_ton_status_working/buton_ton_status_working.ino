@@ -1,22 +1,22 @@
 
-// constants won't change. They're used here to set pin numbers:
+// Test On and Test Reset button with counters
 const int TestStartButtom = 2;
 const int ResetCountersButTestResult = 4;
-const int ledPin =  32;      // the number of the LED pin
 
 
 
-// variables will change:
+// Button's Default State
 int TestStartButtomState = 0;         // variable for reading the pushbutTestResult status
 int ResetCountersButTestResultState = 0;
 
+
+// Test's Default State xhnage as 
 int TestResult = 0;
 
 
 void setup() 
 {
   Serial.begin(9600);
-  pinMode(ledPin, OUTPUT);
   pinMode(TestStartButtom, INPUT);
   pinMode(ResetCountersButTestResult, INPUT);
 }
