@@ -1,92 +1,6 @@
-#include <PZEM004Tv30.h>
-#include <Wire.h>
-#include <Adafruit_I2CDevice.h>
-#include <Adafruit_I2CRegister.h>
-#include "Adafruit_MCP9600.h"
-PZEM004Tv30 pzem2(&Serial2, 27, 14, 0xE3);
-
-//MCP9600
-#define I2C_ADDRESS (0x66)
-Adafruit_MCP9600 mcp;
-
-float voltage;
-float current;
-float power;
-float temperature;
+#include "stationfunctions.h"
 
 
-// Test On and Test Reset button with counters
-const int TestStartButtom = 2;
-const int ResetCountersButTestResult = 4;
-
-
-// input Sensor Pin
-const int inputSensorPin = 15;
-// the number of the LED pin
-
-
-
-// Button's Default State
-int TestStartButtomState = 0;         // variable for reading the pushbutTestResult status
-int ResetCountersButTestResultState = 0;
-
-// Test's Default State xhnage as
-int TestResult = 0;
-
-// Input's Default State xhnage as
-int inputVoltageBit = 0;         // variable for reading the pushbutTestResult status
-int inputSensor = 0;
-
-
-
-
-
-// variables will change:
-int s7_prestate = 0;
-
-
-
-// Variables for Fault  Detection
-int s7_FaultPreviousState = LOW;                     // previousstate of the switch
-unsigned long s7_FaultConfirmDuration = 420000;      // Time we wait before we see the press as a long press
-unsigned long s7_FaultConfirmDurationMillis;       // Time in ms when we the button was pressed
-bool s7_FaultConfirmState = false;                // True if it is a long press
-const int s7_FaultStateChangeInterval = 50;      // Time between two readings of the button state
-unsigned long s7_previousFaultStateMillis;      // Timestamp of the latest reading
-unsigned long s7_FaultDuration;                // Time the button is pressed in ms
-unsigned long s7_FaultcurrentMillis;          // Variabele to store the number of milleseconds since the Arduino has started
-int   s7_faultStatus ;
-
-
-
-int TestStatus()
-{
-  TestStartButtomState = digitalRead(TestStartButtom);
-  ResetCountersButTestResultState = digitalRead(ResetCountersButTestResult);
-  if (TestStartButtomState == HIGH) {
-    TestResult = 1;
-  }
-  if (ResetCountersButTestResultState == HIGH) {
-    TestResult = 0;
-  }
-  //Serial.println(TestResult);
-  return TestResult;
-}
-
-
-int inputStatus()
-{
-  inputVoltageBit = digitalRead(inputSensorPin);
-
-  if (inputVoltageBit == HIGH) {
-    inputSensor = 1;
-  }
-  else {
-    inputSensor = 0;
-  }
-  //Serial.println(TestResult);
-  return inputSensor;
-}
 
 
 
@@ -96,7 +10,7 @@ int inputStatus()
 
 void S7outputPrams()
 {
-  //=========================
+  //========Calibration factors for PZEM==========
   float testCurrent = 0.20;
   float PTRatioMFv = 1.93;
   float PTRatioMFa = 2.0;
@@ -120,14 +34,16 @@ void S7outputPrams()
 
 
   //====================Parameters=========================================
+  
   Serial.println();
   Serial.println("====================Output Socket : Station 7=====================");
 
-  //-------Time--------
-
+  //-------Time-----------------------------------------------------------------------
+  
   Serial.print("Time: ");  Serial.println(timeClient.getFormattedDate());
 
-  //-------voltage--------
+  //-------voltage-----------------------------------------------------------------------
+  
   voltage = PTRatioMFv * pzem2.voltage();
   if (!isnan(voltage))
   {
@@ -137,7 +53,9 @@ void S7outputPrams()
   {
     Serial.println("Error reading voltage");
   }
-  //-------current--------
+  
+  //-------current-----------------------------------------------------------------------
+  
   current = pzem2.current();
   if (!isnan(current))
   {
@@ -147,7 +65,9 @@ void S7outputPrams()
   {
     Serial.println("Error reading current");
   }
-  //-------power--------
+  
+  //-------power-----------------------------------------------------------------------
+  
   power = voltage * current;
 
   if (!isnan(power))
@@ -159,15 +79,17 @@ void S7outputPrams()
     Serial.println("Error reading power");
   }
 
-  //-------Temperature--------
-  Serial.print("Hot Junction: "); Serial.println(mcp.readThermocouple());
+  //-------Temperature-----------------------------------------------------------------------
+  
+  Serial.print("Thermocouple: "); Serial.println(mcp.readThermocouple());
   temperature = mcp.readThermocouple();
 
-  //-------Panel-Buttons-----  Optimise it later
+  //-------Panel-Buttons----------------------------------------------------------------------- Optimise it later
+  
   int x = TestStatus();
   Serial.println(x);
 
-  //------input-sensor-relay----
+  //------input-sensor-relay-----------------------------------------------------------------------
 
   if (inputStatus() ==1)
 {
@@ -179,9 +101,9 @@ void S7outputPrams()
     }
 
 
-  //====================END==of==Parameters=========================
+//====================END==of==Parameters=========================
 
-  preferences.begin("my-app", false);
+  preferences.begin("station", false);
   cycles_value = preferences.getUInt("cycles", 0);
 
 
@@ -197,8 +119,14 @@ void S7outputPrams()
   // FAULT  => Type =
 
 
-  // if (!isnan(pzem1.voltage()) && !isnan(pzem2.voltage()))
-  if (!isnan(pzem2.voltage()))
+//  if (!isnan(pzem1.voltage()) && !isnan(pzem2.voltage()))
+
+if (!TestStatus() ==0){
+
+  
+  if ((inputStatus() ==1) && !isnan(pzem2.voltage()))
+
+  //if (!isnan(pzem2.voltage()))
   {
     Serial.print("Test Status: "); Serial.println("ON");
     TestON = HIGH;
@@ -228,7 +156,7 @@ void S7outputPrams()
     TestFault = LOW;
     Serial.print("Cycles: "); Serial.println(cycles_value);
   }
-
+}
 
 
 

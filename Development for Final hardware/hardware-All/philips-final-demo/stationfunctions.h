@@ -1,3 +1,115 @@
+#include <PZEM004Tv30.h>
+#include <Wire.h>
+#include <Adafruit_I2CDevice.h>
+#include <Adafruit_I2CRegister.h>
+#include "Adafruit_MCP9600.h"
+PZEM004Tv30 pzem2(&Serial2, 27, 14, 0xE3);
+
+//MCP9600
+#define I2C_ADDRESS (0x66)
+Adafruit_MCP9600 mcp;
+
+
+
+// Test On and Test Reset button with counters
+const int TestStartButtom = 2;
+const int ResetCountersAndTestButon = 4;
+
+
+// input Sensor Pin
+const int inputSensorPin = 15;
+// the number of the LED pin
+
+
+// Button's Default State
+int TestStartButtomState = 0;         // variable for reading the pushbutTestResult status
+int ResetCountersAndTestButonState = 0;
+
+
+// Test's Default State xhnage as
+int TestResult = 0;
+
+
+// Input's Default State xhnage as
+int inputVoltageBit = 0;         // variable for reading the pushbutTestResult status
+int inputSensor = 0;
+
+
+
+//Variable for data
+float voltage;
+float current;
+float power;
+float temperature;
+
+
+
+
+
+// variables will change:
+int s7_prestate = 0;
+
+
+
+// Variables for Fault  Detection
+int s7_FaultPreviousState = LOW;                     // previousstate of the switch
+unsigned long s7_FaultConfirmDuration = 420000;      // Time we wait before we see the press as a long press
+unsigned long s7_FaultConfirmDurationMillis;       // Time in ms when we the button was pressed
+bool s7_FaultConfirmState = false;                // True if it is a long press
+const int s7_FaultStateChangeInterval = 50;      // Time between two readings of the button state
+unsigned long s7_previousFaultStateMillis;      // Timestamp of the latest reading
+unsigned long s7_FaultDuration;                // Time the button is pressed in ms
+unsigned long s7_FaultcurrentMillis;          // Variabele to store the number of milleseconds since the Arduino has started
+int   s7_faultStatus ;
+
+
+
+
+
+// Test Status Buttons
+
+
+int TestStatus()
+{
+  TestStartButtomState = digitalRead(TestStartButtom);
+  ResetCountersAndTestButonState = digitalRead(ResetCountersAndTestButon);
+  if (TestStartButtomState == HIGH) {
+    TestResult = 1;
+  }
+  if (ResetCountersAndTestButonState == HIGH) {
+    TestResult = 0;
+  }
+  //Serial.println(TestResult);
+  return TestResult;
+}
+
+
+
+// Test Status Buttons
+
+int inputStatus()
+{
+  inputVoltageBit = digitalRead(inputSensorPin);
+
+  if (inputVoltageBit == HIGH) {
+    inputSensor = 1;
+  }
+  else {
+    inputSensor = 0;
+  }
+  //Serial.println(TestResult);
+  return inputSensor;
+}
+
+
+
+
+
+
+
+
+//=================Setup_functions====================
+
 void setup_Thermocouple(){
   
    Serial.println("MCP9600 HW test");
@@ -74,7 +186,7 @@ void setup_Time()
 
 void setup_PanelButtons(){
    pinMode(TestStartButtom, INPUT);
-  pinMode(ResetCountersButTestResult, INPUT);
+  pinMode(ResetCountersAndTestButon, INPUT);
   
   }
 
